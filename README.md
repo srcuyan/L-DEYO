@@ -107,4 +107,5 @@ model = DEYO("init.pt")
 # Use the model
 model.train(data = "coco.yaml", epochs = 72, lr0 = 0.0001, lrf = 0.0001, weight_decay = 0.0001, optimizer = 'AdamW', warmup_epochs = 0, mosaic = 0, scale = 0.9, mixup = 0.15, copy_paste = 0.3, freeze = 42, device = '0, 1, 2, 3, 4, 5, 6, 7')
 ```
-
+# dataset
+[DOI]（https://zenodo.org/badge/DOI/10.5281/zenodo.13925963.svg）]（https://doi.org/10.5281/zenodo.13925963）
