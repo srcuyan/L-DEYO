@@ -1,0 +1,8 @@
+path: ../datasets/roboflow
+
+train: train2017.txt
+val: valid2017.txt
+test: test.txt
+
+nc: 2
+names: ['coal', 'rock']
