@@ -1,32 +1,26 @@
 ## Introduction
 
-DEYO and YOLOv10 both utilize a one-to-many branch during the training process to acquire sufficient supervisory signals and truncate the gradients of the one-to-one branch to enhance its performance. In the paper "[DEYOv3: DETR with YOLO for Real-time Object Detection](https://arxiv.org/abs/2309.11851)," we introduced Step-by-step training and thoroughly discussed the importance of the one-to-many branch in obtaining adequate supervision for the backbone and neck. Truncating the gradients of the one-to-one branch is a key technical improvement we made to DEYOv3 in the paper "[DEYO: DETR with YOLO for End-to-End Object Detection](https://arxiv.org/abs/2402.16370)." This clearly illustrates that during the training process, providing thorough supervision to the backbone and neck through the one-to-many branch, coupled with a gradient truncation mechanism that fundamentally eliminates the negative impact of one-to-one matching instability on network performance, is essential for ensuring the good performance of the one-to-one branch.
+L-DEYO is an optimized and lightweight object detection model designed specifically for the challenging task of intelligent coal gangue recognition. Coal gangue is a byproduct of the coal mining process and requires efficient identification and separation to reduce environmental impact and improve resource recovery. Traditional methods often struggle with accuracy and real-time performance in industrial settings, particularly when dealing with complex textures and small, overlapping objects.
 
-The training strategy of YOLOv10, although performing well on COCO, may face the following challenges when training on custom datasets compared to DEYO:
+L-DEYO addresses these challenges by integrating key improvements in model architecture, including:
 
-1. There is a difference in the convergence speed between the one-to-many branch and the one-to-one branch, which may lead to overfitting in the one-to-many branch while the one-to-one branch has not yet fully converged.
+- **Ghost Module** in the backbone, which reduces computational complexity while maintaining feature extraction performance.
+- **BiFPN (Bidirectional Feature Pyramid Network)** for multi-scale feature extraction, enhancing detection across different object sizes.
+- **Adaptive Focus Attention Decoder**, optimizing the detection of small and densely packed objects.
+- **Custom Weighted Loss Function**, tackling class imbalance and improving classification accuracy in complex environments.
 
-2. The backbone and neck supervised by the one-to-many branch may not adapt well to the one-to-one branch with a pure convolutional structure, resulting in a significant difference in the final convergence accuracy between the one-to-one and one-to-many branches.
+Through extensive experiments, L-DEYO demonstrates superior accuracy and real-time performance compared to existing methods, making it highly suitable for deployment in industrial applications where resource efficiency and precision are critical.
 
-We employ step-by-step training and have replaced the Hungarian Matching with TAL. By decoupling the training of these two branches, we effectively address the issue of inconsistent convergence speeds between the two. Additionally, we have developed DEYOv1.5 to prevent significant accuracy loss in certain situations where a pure convolutional structure is directly used for the one-to-one branch. DEYOv1.5 introduces the Scale-adaptive Self-Attention proposed in SparseBEV. This method allows us to maintain performance loss within a controllable range without relying on Deformable Attention, while also avoiding the use of the grid_sample operator, making the model more deployable. Furthermore, during the second phase of training, we freeze the bounding box head of the one-to-many branch and use it directly for the prediction of the bounding box in the one-to-one branch. This strategy significantly enhances the model's performance when dealing with situations where there is a large difference in the final convergence accuracy between the one-to-one and one-to-many branches. DEYOv1.5 maintains high precision while only sacrificing 10% of the speed compared to the one-to-one branch using pure convolutions.
+This repository contains the full implementation of L-DEYO, including pre-trained models, training scripts, and detailed documentation to help users reproduce and extend the results.
 
+## Key Features
 
-## Models
-| Model | Epoch | End-to-End | $AP^{val}$ | $AP^{val}_{50}$ | Params(M) | FLOPs(G) | T4 TRT FP16(FPS) |
-|:------|:-----:|:-----------:|:----------:|:---------------:|:---------:|:--------:|:---------------:|
-| YOLOv8-N | --  | ✔ | --   | --   | 3.2  | 8.7   | 554 | 
-| YOLOv10-N | -- | ✔ | 38.5 | 53.8 | 2.3  | 6.7   | 538 | 
-| YOLOv10-N | -- | ✘ | 39.4 | 55.0 | 2.3  | 6.7   | --  |
-| YOLOv9-C  | -- | ✔ | 51.9 | 68.7 | 25.3 | 102.7 | 155 |
-| YOLOv9-C  | -- | ✘ | 52.9 | 69.8 | 25.3 | 102.7 | --  | 
-| YOLOv9-E  | -- | ✔ | 54.6 | 71.4 | 57.4 | 189.5 | 65  |
-| YOLOv9-E  | -- | ✘ | 55.1 | 72.2 | 57.4 | 189.5 | --  |
-| DEYO-tiny | 96 | ✔ | 37.6 | 52.8 | 4.3  | 7.6   | 487 |
-| [DEYOv1.5-N](https://github.com/ouyanghaodong/DEYOv1.5/releases/download/v0.1/deyov1.5n.pt) | 144 | ✔ | 39.5 | 55.7 | 3.1  | 7.2   | 501 | 
-| [DEYOv1.5-C](https://github.com/ouyanghaodong/DEYOv1.5/releases/download/v0.1/deyov1.5c.pt) | 72  | ✔ | 52.6 | 69.5 | 26.6 | 87.4  | 135 |
-| [DEYOv1.5-E](https://github.com/ouyanghaodong/DEYOv1.5/releases/download/v0.1/deyov1.5e.pt) | 72  | ✔ | 55.0 | 71.9 | 58.7 | 174.2 | 63  |
+- Lightweight architecture optimized for real-time industrial applications.
+- Improved handling of complex textures and overlapping objects.
+- Multi-scale feature extraction with BiFPN.
+- Custom loss function for addressing class imbalance.
 
-##### Note: We are using the YOLOv9 implemented by ultralytics, which has a slight difference in accuracy compared to the original version.
+Feel free to explore the code and contribute to the project!
 
 ## Install
 ```bash
@@ -36,8 +30,6 @@ pip install ultralytics
 ## Step-by-step Training
 
 #### Frist Training Stage
-Unlike YOLOv10, DEYO selects the backbone and neck most suitable for the one-to-many branch, rather than those most suitable for the one-to-one branch, achieving true alignment with the accuracy of the one-to-many branch.
-
 Replace `ultralytics/engine/trainer.py` with `trainer.py`
 
 ```python
@@ -116,28 +108,3 @@ model = DEYO("init.pt")
 model.train(data = "coco.yaml", epochs = 72, lr0 = 0.0001, lrf = 0.0001, weight_decay = 0.0001, optimizer = 'AdamW', warmup_epochs = 0, mosaic = 0, scale = 0.9, mixup = 0.15, copy_paste = 0.3, freeze = 42, device = '0, 1, 2, 3, 4, 5, 6, 7')
 ```
 
-## Benchmark
-You can follow the method we used in  [DEYO](https://github.com/ouyanghaodong/DEYO).
-
-## License
-This project builds heavily off of [ultralytics](https://github.com/ultralytics/ultralytics). Please refer to their original licenses for more details.
-
-## Citation
-If you use `DEYOv1.5` in your work, please use the following BibTeX entries:
-```
-@article{Ouyang2023DEYOv3,
-  title={DEYOv3: DETR with YOLO for Real-time Object Detection},
-  author={Haodong Ouyang},
-  journal={ArXiv},
-  year={2023},
-  volume={abs/2309.11851},
-}
-
-@article{Ouyang2024DEYO,
-  title={DEYO: DETR with YOLO for End-to-End Object Detection},
-  author={Haodong Ouyang},
-  journal={ArXiv},
-  year={2024},
-  volume={abs/2402.16370},
-}
-```
