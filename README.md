@@ -1,4 +1,14 @@
 ## Introduction
+The source code and dataset provided on this page are key components used in our paper "L-DEYO: An Optimized Lightweight Model for Intelligent Coal Gangue Recognition" (DOI: 10.5281/zenodo.13925963) 
+These resources are closely related to our research and played a crucial role in the study, as outlined below:
+
+1.Source Code:
+Contains the complete implementation of our proposed L-DEYO model, including the architecture, training, and testing processes.
+Implements the core code for the comparative experiments and ablation studies, enabling other researchers to reproduce our experimental results and verify the model’s performance and improvements.
+The source code also includes the innovative modifications we made during the optimization of the model.
+
+2.Dataset:
+The dataset's availability allows other researchers to validate the model's performance on the same data, providing an assessment of the reliability and stability of our model in practical applications.
 
 L-DEYO is an optimized and lightweight object detection model designed specifically for the challenging task of intelligent coal gangue recognition. Coal gangue is a byproduct of the coal mining process and requires efficient identification and separation to reduce environmental impact and improve resource recovery. Traditional methods often struggle with accuracy and real-time performance in industrial settings, particularly when dealing with complex textures and small, overlapping objects.
 
